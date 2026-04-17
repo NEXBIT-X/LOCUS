@@ -31,7 +31,25 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
+!web/.env.example
+
+# Next.js / Vercel
+.next/
+out/
+.vercel/
+web/.next/
+web/out/
+web/.vercel/
+
+# Python virtual environments
+dev/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
 
 # typescript
 *.tsbuildinfo
