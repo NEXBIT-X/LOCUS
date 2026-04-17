@@ -1,4 +1,7 @@
 # Locus
+
+pitch deck : [LINK](https://docs.google.com/presentation/d/1GME8JNXbEJsT5j5TEH5E5DR62vINkOrU/edit?usp=sharing&ouid=106613689610271939981&rtpof=true&sd=true)
+
 **submission for guidewire devtrails 2026**
 
 **Parametric Income Protection for India's Gig Delivery Workers**
