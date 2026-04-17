@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { supabase } from '../lib/supabase'
 import theme from '../themes/colors'
@@ -7,34 +7,54 @@ import LocusLogo from './LocusLogo'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
 
-  async function signIn() {
+  const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email])
+
+  async function requestOtp() {
+    if (!normalizedEmail) {
+      Alert.alert('Email required', 'Enter your email to receive a one-time code.')
+      return
+    }
+
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
+    const { error } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        shouldCreateUser: true,
+      },
     })
 
     if (error) {
       Alert.alert(error.message)
+      setOtpSent(false)
+    } else {
+      setOtpSent(true)
+      Alert.alert('Code sent', 'Check your email for the 6-digit login code.')
     }
 
     setLoading(false)
   }
 
-  async function signUp() {
+  async function verifyOtp() {
+    if (!normalizedEmail || !otp.trim()) {
+      Alert.alert('Code required', 'Enter the one-time code from your email.')
+      return
+    }
+
     setLoading(true)
-    const { error } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
+    const { error } = await supabase.auth.verifyOtp({
+      email: normalizedEmail,
+      token: otp.trim(),
+      type: 'email',
     })
 
     if (error) {
       Alert.alert(error.message)
     } else {
-      Alert.alert('Account created', 'You can sign in now.')
+      Alert.alert('Signed in', 'Your session is active.')
     }
 
     setLoading(false)
@@ -47,7 +67,7 @@ export default function Auth() {
           <LocusLogo size={46} />
           <View>
             <Text style={styles.title}>LOCUS NODE</Text>
-            <Text style={styles.subtitle}>Email and password access</Text>
+            <Text style={styles.subtitle}>Email OTP access</Text>
           </View>
         </View>
 
@@ -66,13 +86,13 @@ export default function Auth() {
         </View>
 
         <View style={styles.block}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>One-time code</Text>
           <TextInput
-            onChangeText={setPassword}
-            value={password}
-            placeholder="Enter password"
-            autoCapitalize="none"
-            secureTextEntry
+            onChangeText={setOtp}
+            value={otp}
+            placeholder="123456"
+            keyboardType="number-pad"
+            maxLength={6}
             style={styles.input}
             placeholderTextColor={theme.colors.textMuted}
           />
@@ -80,21 +100,23 @@ export default function Auth() {
 
         <TouchableOpacity
           style={[styles.button, loading && styles.disabled]}
-          onPress={signIn}
+          onPress={requestOtp}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.buttonText}>{otpSent ? 'Resend Code' : 'Send Login Code'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton, loading && styles.disabled]}
-          onPress={signUp}
+          onPress={verifyOtp}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>Sign Up</Text>
+          <Text style={styles.buttonText}>Verify Code</Text>
         </TouchableOpacity>
 
-        <Text style={styles.footer}>Telemetry runs only when you explicitly switch online.</Text>
+        <Text style={styles.footer}>
+          Telemetry runs only when you explicitly switch online. OTP login is email-based and works with the Supabase auth provider already configured for this project.
+        </Text>
       </GlassCard>
     </View>
   )

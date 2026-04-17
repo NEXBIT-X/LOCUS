@@ -1,3 +1,4 @@
+import { AppState, AppStateStatus } from 'react-native'
 import * as TaskManager from 'expo-task-manager'
 import * as Location from 'expo-location'
 import { Accelerometer, AccelerometerMeasurement } from 'expo-sensors'
@@ -132,6 +133,35 @@ export function initializeTelemetrySync() {
   })
 
   return unsubscribe
+}
+
+export function initializeTelemetryEngine() {
+  const teardownSync = initializeTelemetrySync()
+  const teardownAccelerometer = startAccelerometerBatching()
+  let disposed = false
+
+  const resumeTelemetry = async (state: AppStateStatus) => {
+    if (disposed || state !== 'active') {
+      return
+    }
+
+    const isOnline = useAppStore.getState().isOnline
+    if (isOnline) {
+      const started = await startTelemetry()
+      if (started) {
+        await flushTelemetryQueue()
+      }
+    }
+  }
+
+  const appStateSubscription = AppState.addEventListener('change', resumeTelemetry)
+
+  return () => {
+    disposed = true
+    appStateSubscription.remove()
+    teardownSync()
+    teardownAccelerometer()
+  }
 }
 
 async function queueTelemetry(payload: TelemetryPayload) {

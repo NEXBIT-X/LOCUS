@@ -14,8 +14,7 @@ import WalletScreen from './screens/WalletScreen'
 import IdentityScreen from './screens/IdentityScreen'
 import {
   flushTelemetryQueue,
-  initializeTelemetrySync,
-  startAccelerometerBatching,
+  initializeTelemetryEngine,
   startTelemetry,
   stopTelemetry,
 } from './services/telemetry'
@@ -49,8 +48,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const teardownSync = initializeTelemetrySync()
-    const teardownAccelerometer = startAccelerometerBatching()
+    const teardownTelemetry = initializeTelemetryEngine()
 
     // Expo Go no longer supports Android remote notification APIs in SDK 53+.
     if (Constants.appOwnership !== 'expo') {
@@ -60,8 +58,7 @@ export default function App() {
     }
 
     return () => {
-      teardownSync()
-      teardownAccelerometer()
+      teardownTelemetry()
     }
   }, [])
 

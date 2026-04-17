@@ -1,0 +1,8 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/page": "/",
+  "/auth/page": "/auth",
+  "/worker/page": "/worker",
+  "/settings/page": "/settings"
+}
